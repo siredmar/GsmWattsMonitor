@@ -1,0 +1,20 @@
+I used a hair dryer with several settings and an powermeter to calibrate 
+the EmonLib calibration factor.
+For me the results are very good with a factor: 28.25
+
+Hardware schematic for sensor:
+Analog Pin
+o----------------------------------o o--
+                                        |
+3.3V/5V                                 \ Sensor SCT-013-0xx
+o---------------o                       /
+                |                       \
+          10k  | |                      /
+               | |                      |
+                |                       |
+                o--------o---------o o--
+                |        |
+          10k  | |     +--- 10uF - 47uF
+               | |      --- 
+                |        |
+o---------------o--------o
