@@ -14,15 +14,16 @@ EnergyMonitor emon1;
 
 void PrintHelp()
 {
-    Serial.println(F("Available commands"));
-    Serial.println(F("help\t\tget this help"));
-    Serial.println(F("sim_pin\t\tsim_pin <pin>"));
-    Serial.println(F("status\t\tstatus information"));
-    Serial.println(F("eeprom_reset\tresets the eeprom defaults"));
-    Serial.println(F("register\tregister <number> <call> <seconds> <sms>"));
-    Serial.println(F("delete\tdelete <number>"));
-    Serial.println(F("text\ttext <text for SMS>"));
-    Serial.println(F("calib\tcalib <value>"));
+    Serial.println(F("Command\t\tDescription\t\t\tUsage"));
+    Serial.println(F("help\t\tGet this help.\t\t\thelp"));
+    Serial.println(F("sim_pin\t\tSets SIM pin.\t\t\tsim_pin <pin>"));
+    Serial.println(F("status\t\tGet status information.\t\tstatus_information"));
+    Serial.println(F("eeprom_reset\tResets the eeprom defaults.\teeprom_reset"));
+    Serial.println(F("register\tRegisters number with flags. \t<number> <call> <seconds> <sms>"));
+    Serial.println(F("delete\t\tdeletes registration. \t\tdelete <number>"));
+    Serial.println(F("text\t\tSets SMS text. \t\t\t<text for SMS>"));
+    Serial.println(F("calib\t\tSets curent sensor calibration.\tcalib <value>"));
+    Serial.println(F("trigger\t\tSets current sensor trigger.\ttrigger <watts trigger> <timeout hysteresis>"));
 }
 
 void Register(int arg_cnt, char** args)
@@ -64,6 +65,10 @@ void Status(int arg_cnt, char** args)
     Serial.println(configuration->initialized());
     Serial.print(F("SIM Pin: "));
     Serial.println(configuration->simPin());
+    Serial.print(F("Current Watts trigger: "));
+    Serial.println(configuration->energyWattsTrigger());
+    Serial.print(F("Current Watts timeout: "));
+    Serial.println(configuration->energyWattsTimeout());
     Serial.print(F("Current sensor calibration: "));
     Serial.println(configuration->energyEmonCalibration());
     contact->status();
@@ -86,8 +91,20 @@ void Calibration(int arg_cnt, char** args)
 {
     if (arg_cnt == 2)
     {
-        Serial.println(args[1]);
         configuration->energyEmonCalibration((double)cmdStr2float(args[1]));
+    }
+    else
+    {
+        Serial.println(F("invalid arguments"));
+    }
+}
+
+void Trigger(int arg_cnt, char** args)
+{
+    if (arg_cnt == 3)
+    {
+        configuration->energyWattsTrigger((double)cmdStr2float(args[1]));
+        configuration->energyWattsTimeout(cmdStr2Num(args[2], 10));
     }
     else
     {
@@ -143,6 +160,7 @@ void setup()
     cmdAdd("process", Process);
     cmdAdd("text", Text);
     cmdAdd("calib", Calibration);
+    cmdAdd("trigger", Trigger);
     PrintHelp();
     Serial.print(F("CMD >> "));
 }
@@ -152,5 +170,4 @@ void loop()
     cmdPoll();
     delay(100);
     double Irms = emon1.calcIrms(1480);  // Calculate Irms only
-    Serial.println(Irms*230.0);	       // Apparent power
 }

@@ -172,3 +172,27 @@ double Configuration::energyEmonCalibration()
     EEPROM_readAnything(0, configuration);
     return configuration.energy.emonCalibration;
 }
+
+void Configuration::energyWattsTimeout(int seconds)
+{
+    configuration.energy.wattsTimeout = seconds;
+    EEPROM_writeAnything(0, configuration);
+}
+
+int Configuration::energyWattsTimeout()
+{
+    EEPROM_readAnything(0, configuration);
+    return configuration.energy.wattsTimeout;
+}
+
+void Configuration::energyWattsTrigger(double trigger)
+{
+    configuration.energy.wattsTrigger = trigger;
+    EEPROM_writeAnything(0, configuration);
+}
+
+double Configuration::energyWattsTrigger()
+{
+    EEPROM_readAnything(0, configuration);
+    return configuration.energy.wattsTrigger;
+}

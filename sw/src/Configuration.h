@@ -77,7 +77,10 @@ public:
 
     void energyEmonCalibration(double calib);
     double energyEmonCalibration();
-
+    void energyWattsTimeout(int seconds);
+    int energyWattsTimeout();
+    void energyWattsTrigger(double trigger);
+    double energyWattsTrigger();
 private:
     configurationType configuration;
 };
