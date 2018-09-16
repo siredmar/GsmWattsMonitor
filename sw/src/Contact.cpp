@@ -9,7 +9,11 @@ Contact::Contact(Sim800* m, Configuration* configuration)
 bool Contact::init()
 {
     Serial.println(configuration->simPin());
-    modem->init(String(configuration->simPin()));
+    if (!modem->init(String(configuration->simPin())))
+    {
+        return false;
+    }
+    return true;
 }
 
 bool Contact::sendSms(String number, String text)

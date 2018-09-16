@@ -30,7 +30,12 @@ bool Sim800::init(String pin)
     functionMode(true);
     Serial.println(F(" done"));
     Serial.print(F("Unlocking SIM..."));
-    setPin(pin);
+
+    if (!setPin(pin))
+    {
+        Serial.println(F(" failed"));
+        return false;
+    }
     delay(5000);
     Serial.println(F(" done"));
 
@@ -41,6 +46,7 @@ bool Sim800::init(String pin)
         Serial.print(F("."));
     }
     Serial.println(F(" connected"));
+    return true;
 }
 
 bool Sim800::testAT()

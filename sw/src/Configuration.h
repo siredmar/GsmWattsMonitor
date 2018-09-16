@@ -50,6 +50,7 @@ public:
         contactsConfigurationType contacts;
         simConfigurationType sim;
     } configurationType;
+
     void reset();
     void resetFactoryEeprom(int size);
 
