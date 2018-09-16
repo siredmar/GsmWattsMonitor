@@ -17,6 +17,7 @@ void PrintHelp()
     Serial.println(F("eeprom_reset\tresets the eeprom defaults"));
     Serial.println(F("register\tregister <number> <call> <seconds> <sms>"));
     Serial.println(F("delete\tdelete <number>"));
+    Serial.println(F("text\ttext <text for SMS>"));
 }
 
 void Register(int arg_cnt, char** args)
@@ -35,6 +36,20 @@ void Delete(int arg_cnt, char** args)
 void Help(int arg_cnt, char** args)
 {
     PrintHelp();
+}
+
+void Text(int arg_cnt, char** args)
+{
+    String text;
+    for (int i = 1; i < arg_cnt; i++)
+    {
+        text += String(args[i]);
+        text += " ";
+    }
+
+    Serial.print(F("Setting SMS text to: "));
+    Serial.println(text);
+    configuration->text(text.c_str());
 }
 
 void Status(int arg_cnt, char** args)
@@ -92,13 +107,14 @@ void setup()
     contact->init();
 
     cmdInit(&Serial);
-    // cmdAdd("help", Help);
+    cmdAdd("help", Help);
     cmdAdd("status", Status);
     cmdAdd("sim_pin", SimPin);
     cmdAdd("eeprom_reset", EepromReset);
     cmdAdd("register", Register);
     cmdAdd("delete", Delete);
     cmdAdd("process", Process);
+    cmdAdd("text", Text);
     PrintHelp();
     Serial.print(F("CMD >> "));
 }

@@ -1,4 +1,5 @@
 #pragma once
+
 enum class NumberOfContacts
 {
     CONTACT_0 = 0,

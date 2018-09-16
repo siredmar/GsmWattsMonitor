@@ -1,5 +1,4 @@
 #include "Contact.h"
-#include "credentials.h"
 
 Contact::Contact(Sim800* m, Configuration* configuration)
     : modem(m)

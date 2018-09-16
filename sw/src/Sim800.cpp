@@ -1,5 +1,4 @@
 #include "Sim800.h"
-#include "credentials.h"
 
 Sim800::Sim800()
     : rxPin(SIM800_DEFAULT_RX)
