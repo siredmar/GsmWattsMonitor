@@ -1,0 +1,2 @@
+[submodule "lib/CmdArduino"]
+	url = https://github.com/siredmar/CmdArduino.git
