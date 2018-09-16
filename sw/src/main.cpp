@@ -3,10 +3,14 @@
 #include "Sim800.h"
 #include <Arduino.h>
 #include <Cmd.h>
+#include <EmonLib.h>
+
+#define EMON_PIN 1
 
 Sim800* modem;
 Contact* contact;
 Configuration* configuration;
+EnergyMonitor emon1;
 
 void PrintHelp()
 {
@@ -18,6 +22,7 @@ void PrintHelp()
     Serial.println(F("register\tregister <number> <call> <seconds> <sms>"));
     Serial.println(F("delete\tdelete <number>"));
     Serial.println(F("text\ttext <text for SMS>"));
+    Serial.println(F("calib\tcalib <value>"));
 }
 
 void Register(int arg_cnt, char** args)
@@ -46,6 +51,7 @@ void Text(int arg_cnt, char** args)
         text += String(args[i]);
         text += " ";
     }
+    text += String(args[arg_cnt]);
 
     Serial.print(F("Setting SMS text to: "));
     Serial.println(text);
@@ -58,15 +64,34 @@ void Status(int arg_cnt, char** args)
     Serial.println(configuration->initialized());
     Serial.print(F("SIM Pin: "));
     Serial.println(configuration->simPin());
+    Serial.print(F("Current sensor calibration: "));
+    Serial.println(configuration->energyEmonCalibration());
     contact->status();
 }
 
 void SimPin(int arg_cnt, char** args)
 {
-    if (arg_cnt > 1)
+    if (arg_cnt == 2)
     {
         Serial.println(args[1]);
         configuration->simPin(args[1]);
+    }
+    else
+    {
+        Serial.println(F("invalid arguments"));
+    }
+}
+
+void Calibration(int arg_cnt, char** args)
+{
+    if (arg_cnt == 2)
+    {
+        Serial.println(args[1]);
+        configuration->energyEmonCalibration((double)cmdStr2float(args[1]));
+    }
+    else
+    {
+        Serial.println(F("invalid arguments"));
     }
 }
 
@@ -106,6 +131,8 @@ void setup()
     contact = new Contact(modem, configuration);
     contact->init();
 
+    emon1.current(EMON_PIN, configuration->energyEmonCalibration());
+
     cmdInit(&Serial);
     cmdAdd("help", Help);
     cmdAdd("status", Status);
@@ -115,6 +142,7 @@ void setup()
     cmdAdd("delete", Delete);
     cmdAdd("process", Process);
     cmdAdd("text", Text);
+    cmdAdd("calib", Calibration);
     PrintHelp();
     Serial.print(F("CMD >> "));
 }
@@ -123,4 +151,6 @@ void loop()
 {
     cmdPoll();
     delay(100);
+    double Irms = emon1.calcIrms(1480);  // Calculate Irms only
+    emon1.serialprint();
 }

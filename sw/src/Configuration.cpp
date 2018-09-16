@@ -160,3 +160,15 @@ int Configuration::contactCallSeconds(int index)
     EEPROM_readAnything(0, configuration);
     return configuration.contacts.contact[index].seconds;
 }
+
+void Configuration::energyEmonCalibration(double calib)
+{
+    configuration.energy.emonCalibration = calib;
+    EEPROM_writeAnything(0, configuration);
+}
+
+double Configuration::energyEmonCalibration()
+{
+    EEPROM_readAnything(0, configuration);
+    return configuration.energy.emonCalibration;
+}

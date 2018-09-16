@@ -75,6 +75,9 @@ public:
     void contactNumber(int index, const char* number);
     const char* contactNumber(int index);
 
+    void energyEmonCalibration(double calib);
+    double energyEmonCalibration();
+
 private:
     configurationType configuration;
 };
