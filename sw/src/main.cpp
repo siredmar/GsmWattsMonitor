@@ -1,5 +1,6 @@
 #include "Configuration.h"
 #include "Contact.h"
+#include "MovingAverage.h"
 #include "Sim800.h"
 #include <Arduino.h>
 #include <Cmd.h>
@@ -11,6 +12,7 @@ Sim800* modem;
 Contact* contact;
 Configuration* configuration;
 EnergyMonitor emon1;
+MovingAverage<float> average(10);
 
 void PrintHelp()
 {
@@ -168,6 +170,9 @@ void setup()
 void loop()
 {
     cmdPoll();
-    delay(100);
-    double Irms = emon1.calcIrms(1480);  // Calculate Irms only
+    delay(10);
+    double watts = emon1.calcIrms(1480) * 230.0;
+    float avg = average.CalculateMovingAverage((float)watts);
+
+    Serial.println(avg);
 }
