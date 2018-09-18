@@ -19,18 +19,19 @@ bool verbose = false;
 
 void PrintHelp()
 {
+    Serial.println(F("GsmWattsMonitor - (c) 2018 - Armin Schlegel <armin.schlegel@gmx.de>"));
     Serial.println(F("Command\t\tDescription\t\t\tUsage"));
     Serial.println(F("help\t\tGet this help.\t\t\thelp"));
-    Serial.println(F("sim_pin\t\tSets SIM pin.\t\t\tsim_pin <pin>"));
     Serial.println(F("status\t\tGet status information.\t\tstatus_information"));
+    Serial.println(F("verbose\t\tMake program output verbose.\tverbose <value>"));
+    Serial.println(F("sim_pin\t\tSets SIM pin.\t\t\tsim_pin <pin>"));
     Serial.println(F("eeprom_reset\tResets the eeprom defaults.\teeprom_reset"));
-    Serial.println(F("register\tRegisters number with flags. \t<number> <call> <seconds> <sms>"));
-    Serial.println(F("delete\t\tdeletes registration. \t\tdelete <number>"));
     Serial.println(F("text\t\tSets SMS text. \t\t\ttext <text for SMS>"));
     Serial.println(F("calib\t\tSets curent sensor calibration.\tcalib <value>"));
     Serial.println(F("trigger\t\tSets current sensor trigger.\ttrigger <watts trigger> <timeout hysteresis> <release trigger>"));
+    Serial.println(F("register\tRegisters number with flags. \tregister <number> <call> <seconds> <sms>"));
+    Serial.println(F("delete\t\tdeletes registration. \t\tdelete <number>"));
     Serial.println(F("test\t\tTests processing.\t\ttest"));
-    Serial.println(F("verbose\t\tMake program output verbose.\tverbose <value>"));
 }
 
 void Register(int arg_cnt, char** args)

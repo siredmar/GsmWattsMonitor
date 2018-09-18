@@ -12,9 +12,7 @@ void Configuration::reset()
 
     configuration.sim.pin[0] = '\0';
     configuration.sim.enabled = false;
-    configuration.sim.apn[0] = '\0';
-    configuration.sim.user[0] = '\0';
-    configuration.sim.pass[0] = '\0';
+    configuration.sim.reserved[0] = '\0';
 
     sprintf(configuration.contacts.text, "I\'d like to inform you that i\'m done");
     configuration.contacts.numberOfRegisteredContacts = 0;

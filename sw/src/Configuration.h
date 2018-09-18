@@ -15,9 +15,7 @@ public:
     {
         bool enabled;
         char pin[9];
-        char apn[30];
-        char user[20];
-        char pass[20];
+        char reserved[70];
     } simConfigurationType;
 
     typedef struct
