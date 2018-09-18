@@ -6,6 +6,7 @@ void Configuration::reset()
     configuration.initialized = '1';
 
     configuration.energy.wattsTrigger = 0.0;
+    configuration.energy.wattsRelease = 0.0;
     configuration.energy.wattsTimeout = 0;
     configuration.energy.emonCalibration = 0.0;
 
@@ -195,4 +196,16 @@ double Configuration::energyWattsTrigger()
 {
     EEPROM_readAnything(0, configuration);
     return configuration.energy.wattsTrigger;
+}
+
+void Configuration::energyWattsRelease(double release)
+{
+    configuration.energy.wattsRelease = release;
+    EEPROM_writeAnything(0, configuration);
+}
+
+double Configuration::energyWattsRelease()
+{
+    EEPROM_readAnything(0, configuration);
+    return configuration.energy.wattsRelease;
 }

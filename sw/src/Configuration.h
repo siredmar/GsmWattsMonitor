@@ -39,6 +39,7 @@ public:
     typedef struct
     {
         double wattsTrigger;
+        double wattsRelease;
         long wattsTimeout;
         double emonCalibration;
     } energyConfigurationType;
@@ -81,6 +82,9 @@ public:
     int energyWattsTimeout();
     void energyWattsTrigger(double trigger);
     double energyWattsTrigger();
+    void energyWattsRelease(double release);
+    double energyWattsRelease();
+
 private:
     configurationType configuration;
 };

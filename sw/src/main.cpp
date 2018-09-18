@@ -2,6 +2,7 @@
 #include "Contact.h"
 #include "MovingAverage.h"
 #include "Sim800.h"
+#include "TriggerSwitch.h"
 #include <Arduino.h>
 #include <Cmd.h>
 #include <EmonLib.h>
@@ -13,6 +14,8 @@ Contact* contact;
 Configuration* configuration;
 EnergyMonitor emon1;
 MovingAverage<float> average(10);
+TriggerSwitch<float>* trigger;
+bool verbose = false;
 
 void PrintHelp()
 {
@@ -23,9 +26,11 @@ void PrintHelp()
     Serial.println(F("eeprom_reset\tResets the eeprom defaults.\teeprom_reset"));
     Serial.println(F("register\tRegisters number with flags. \t<number> <call> <seconds> <sms>"));
     Serial.println(F("delete\t\tdeletes registration. \t\tdelete <number>"));
-    Serial.println(F("text\t\tSets SMS text. \t\t\t<text for SMS>"));
+    Serial.println(F("text\t\tSets SMS text. \t\t\ttext <text for SMS>"));
     Serial.println(F("calib\t\tSets curent sensor calibration.\tcalib <value>"));
-    Serial.println(F("trigger\t\tSets current sensor trigger.\ttrigger <watts trigger> <timeout hysteresis>"));
+    Serial.println(F("trigger\t\tSets current sensor trigger.\ttrigger <watts trigger> <timeout hysteresis> <release trigger>"));
+    Serial.println(F("test\t\tTests processing.\t\ttest"));
+    Serial.println(F("verbose\t\tMake program output verbose.\tverbose <value>"));
 }
 
 void Register(int arg_cnt, char** args)
@@ -34,6 +39,18 @@ void Register(int arg_cnt, char** args)
     int seconds = (int)cmdStr2Num(args[3], 10);
     bool sms = (bool)cmdStr2Num(args[4], 10);
     contact->registerNumber(String(args[1]), call, seconds, sms);
+}
+
+void Verbose(int arg_cnt, char** args)
+{
+    if (arg_cnt == 2)
+    {
+        verbose = (bool)cmdStr2Num(args[1], 10);
+    }
+    else
+    {
+        Serial.println(F("invalid arguments"));
+    }
 }
 
 void Delete(int arg_cnt, char** args)
@@ -67,11 +84,13 @@ void Status(int arg_cnt, char** args)
     Serial.println(configuration->initialized());
     Serial.print(F("SIM Pin: "));
     Serial.println(configuration->simPin());
-    Serial.print(F("Current Watts trigger: "));
+    Serial.print(F("Watts trigger: "));
     Serial.println(configuration->energyWattsTrigger());
-    Serial.print(F("Current Watts timeout: "));
+    Serial.print(F("Watts release: "));
+    Serial.println(configuration->energyWattsRelease());
+    Serial.print(F("Watts timeout: "));
     Serial.println(configuration->energyWattsTimeout());
-    Serial.print(F("Current sensor calibration: "));
+    Serial.print(F("Sensor calibration: "));
     Serial.println(configuration->energyEmonCalibration());
     contact->status();
 }
@@ -103,10 +122,11 @@ void Calibration(int arg_cnt, char** args)
 
 void Trigger(int arg_cnt, char** args)
 {
-    if (arg_cnt == 3)
+    if (arg_cnt == 4)
     {
         configuration->energyWattsTrigger((double)cmdStr2float(args[1]));
         configuration->energyWattsTimeout(cmdStr2Num(args[2], 10));
+        configuration->energyWattsRelease((double)cmdStr2float(args[3]));
     }
     else
     {
@@ -145,7 +165,7 @@ void setup()
         Serial.print(F("Sim Pin: "));
         Serial.println(configuration->simPin());
     }
-
+    trigger = new TriggerSwitch<float>(configuration->energyWattsTrigger(), configuration->energyWattsRelease(), configuration->energyWattsTimeout(), &Process);
     modem = new Sim800(8, 9);
     contact = new Contact(modem, configuration);
     contact->init();
@@ -159,20 +179,32 @@ void setup()
     cmdAdd("eeprom_reset", EepromReset);
     cmdAdd("register", Register);
     cmdAdd("delete", Delete);
-    cmdAdd("process", Process);
+    cmdAdd("test", Process);
     cmdAdd("text", Text);
     cmdAdd("calib", Calibration);
     cmdAdd("trigger", Trigger);
+    cmdAdd("verbose", Verbose);
+
     PrintHelp();
     Serial.print(F("CMD >> "));
 }
 
 void loop()
 {
+    static int loop = 0;
     cmdPoll();
     delay(10);
     double watts = emon1.calcIrms(1480) * 230.0;
-    float avg = average.CalculateMovingAverage((float)watts);
-
-    Serial.println(avg);
+    // ignore the first 10 readings
+    if (loop > 10)
+    {
+        float avg = average.CalculateMovingAverage((float)watts);
+        if (verbose)
+            Serial.println(avg);
+        trigger->process((float)avg);
+    }
+    else
+    {
+        loop++;
+    }
 }
