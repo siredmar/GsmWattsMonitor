@@ -19,6 +19,7 @@ Sim800::Sim800(int rx, int tx)
 bool Sim800::init(String pin)
 {
     Serial.print(F("Trying to find Sim800..."));
+    sendCmd("AT+CMEE=1");
     while (!testAT())
     {
         delay(100);
@@ -30,13 +31,12 @@ bool Sim800::init(String pin)
     functionMode(true);
     Serial.println(F(" done"));
     Serial.print(F("Unlocking SIM..."));
-
-    if (!setPin(pin))
+    setPin(pin);
+    delay(5000);
+    if (!checkPin())
     {
         Serial.println(F(" failed"));
-        return false;
     }
-    delay(5000);
     Serial.println(F(" done"));
 
     Serial.print(F("Trying to find network..."));
@@ -121,6 +121,15 @@ bool Sim800::setPin(String pin)
     String command;
     command = "AT+CPIN=";
     command += pin;
+
+    mySerial->println(command);
+    return readResponse("OK");
+}
+
+bool Sim800::checkPin()
+{
+    String command;
+    command = "AT+CPIN?";
 
     mySerial->println(command);
     return readResponse("READY");

@@ -1,5 +1,6 @@
 #include "Configuration.h"
 #include "Contact.h"
+#include "Led.h"
 #include "MovingAverage.h"
 #include "Sim800.h"
 #include "TriggerSwitch.h"
@@ -7,7 +8,9 @@
 #include <Cmd.h>
 #include <EmonLib.h>
 
-#define EMON_PIN 1
+#define EMON_PIN 7
+#define LED_PIN 12
+#define LED_BLINK_TIME_MS 1000
 
 Sim800* modem;
 Contact* contact;
@@ -16,6 +19,7 @@ EnergyMonitor emon1;
 MovingAverage<float> average(10);
 TriggerSwitch<float>* trigger;
 bool verbose = false;
+Led led(LED_PIN, false);
 
 void PrintHelp()
 {
@@ -32,6 +36,12 @@ void PrintHelp()
     Serial.println(F("register\tRegisters number with flags. \tregister <number> <call> <seconds> <sms>"));
     Serial.println(F("delete\t\tdeletes registration. \t\tdelete <number>"));
     Serial.println(F("test\t\tTests processing.\t\ttest"));
+    Serial.println(F("reset\t\tTriggers a software reset.\treset"));
+}
+
+void Reset(int arg_cnt, char** args)
+{
+    asm("jmp 0");
 }
 
 void Register(int arg_cnt, char** args)
@@ -152,9 +162,14 @@ void EepromReset(int arg_cnt, char** args)
 
 void setup()
 {
+    led.on();
+    // Give the supply voltage time to settle!
+    delay(5000);
+
     Serial.begin(115200);
     configuration = new Configuration();
-
+    led.off();
+    delay(1000);
     if (configuration->initialized() == 0xFF)
     {
         Serial.println(F("EEPROM is fresh -> initializing"));
@@ -166,11 +181,19 @@ void setup()
         Serial.print(F("Sim Pin: "));
         Serial.println(configuration->simPin());
     }
+    led.on();
+    delay(1000);
     trigger = new TriggerSwitch<float>(configuration->energyWattsTrigger(), configuration->energyWattsRelease(), configuration->energyWattsTimeout(), &Process);
-    modem = new Sim800(8, 9);
+    modem = new Sim800(8, 7);
     contact = new Contact(modem, configuration);
-    contact->init();
-
+    if (!contact->init())
+    {
+        led.off();
+    }
+    else
+    {
+        led.on();
+    }
     emon1.current(EMON_PIN, configuration->energyEmonCalibration());
 
     cmdInit(&Serial);
@@ -185,6 +208,7 @@ void setup()
     cmdAdd("calib", Calibration);
     cmdAdd("trigger", Trigger);
     cmdAdd("verbose", Verbose);
+    cmdAdd("reset", Reset);
 
     PrintHelp();
     Serial.print(F("CMD >> "));
@@ -207,5 +231,14 @@ void loop()
     else
     {
         loop++;
+    }
+
+    if (trigger->getState() == true)
+    {
+        led.blink();
+    }
+    else
+    {
+        led.on();
     }
 }

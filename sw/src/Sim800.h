@@ -6,7 +6,8 @@
 // #define SIM800_DEBUG
 
 #define SIM800_DEFAULT_RX 8
-#define SIM800_DEFAULT_TX 9
+#define SIM800_DEFAULT_TX 7
+
 #define TIME_OUT_READ_SERIAL 5000
 class Sim800
 {
@@ -21,6 +22,7 @@ public:
     bool callNumber(String number);
     bool hangupCall();
     bool setPin(String pin);
+    bool checkPin();
 
 private:
     SoftwareSerial* mySerial;

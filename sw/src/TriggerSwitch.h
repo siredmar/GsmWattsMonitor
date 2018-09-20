@@ -13,7 +13,8 @@ template <class T> class TriggerSwitch
 {
 public:
     TriggerSwitch(T trigger, T release, int hysteresis, void (*callback)(void))
-        : trigger(trigger)
+        : newTrigger(false)
+        , trigger(trigger)
         , release(release)
         , hysteresisMs(hysteresis * 1000)
         , startTime(-1)
@@ -45,6 +46,7 @@ public:
                 if (input >= trigger)
                 {
                     state = TriggerSwitchState::trigger;
+                    newTrigger = false;
                 }
                 break;
 
@@ -66,6 +68,7 @@ public:
                     if (timeDelta >= hysteresisMs)
                     {
                         state = TriggerSwitchState::release;
+                        newTrigger = true;
                     }
                 }
                 else if (input >= trigger)
@@ -82,7 +85,13 @@ public:
         }
     }
 
+    bool getState()
+    {
+        return newTrigger;
+    }
+
 private:
+    bool newTrigger;
     T trigger;
     T release;
     long hysteresisMs;
