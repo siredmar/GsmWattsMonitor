@@ -71,7 +71,7 @@ public:
                         newTrigger = true;
                     }
                 }
-                else if (input >= trigger)
+                else
                 {
                     state = TriggerSwitchState::trigger;
                 }

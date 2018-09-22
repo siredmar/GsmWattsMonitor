@@ -235,7 +235,7 @@ void loop()
         loop++;
     }
 
-    if (trigger->getState() == true)
+    if (trigger->getState() == false)
     {
         led.blink();
     }
