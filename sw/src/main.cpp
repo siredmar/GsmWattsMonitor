@@ -103,6 +103,8 @@ void Status(int arg_cnt, char** args)
     Serial.println(configuration->energyWattsTimeout());
     Serial.print(F("Sensor calibration: "));
     Serial.println(configuration->energyEmonCalibration());
+    Serial.print(F("Trigger switch state: "));
+    Serial.println((int)trigger->getStatemachine());
     contact->status();
 }
 

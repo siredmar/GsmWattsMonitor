@@ -90,6 +90,11 @@ public:
         return newTrigger;
     }
 
+    TriggerSwitchState getStatemachine()
+    {
+        return state;
+    }
+
 private:
     bool newTrigger;
     T trigger;
