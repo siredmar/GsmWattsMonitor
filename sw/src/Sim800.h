@@ -40,8 +40,8 @@ private:
     String readSerial();
     String readSerial(uint32_t timeout);
     bool readResponse(const String& str);
-    bool sendCmd(char c);
     bool sendCmd(const String& text, bool newline);
+    bool sendCmd(char c);
     int rxPin;
     int txPin;
 };

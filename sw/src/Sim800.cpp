@@ -242,22 +242,7 @@ bool Sim800::readResponse(const String& pattern)
     }
 }
 
-bool Sim800::sendCmd(String text)
-{
-#ifdef SIM800_DEBUG
-    Serial.println(input);
-#endif
-    if (input.indexOf(pattern) == -1)
-    {
-        return false;
-    }
-    else
-    {
-        return true;
-    }
-}
-
-bool Sim800::sendCmd(String text, bool newline = true)
+bool Sim800::sendCmd(const String& text, bool newline = true)
 {
 #ifdef SIM800_DEBUG
     if (newline)
@@ -281,4 +266,19 @@ bool Sim800::sendCmd(char c)
     mySerial->print(c);
     delay(100);
     return true;
+}
+
+bool Sim800::parseInput(const String& input, String pattern)
+{
+#ifdef SIM800_DEBUG
+    Serial.println(input);
+#endif
+    if (input.indexOf(pattern) == -1)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
