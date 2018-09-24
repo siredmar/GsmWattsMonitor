@@ -16,7 +16,7 @@ Sim800::Sim800(int rx, int tx)
     mySerial->begin(57600);
 }
 
-bool Sim800::init(String pin)
+bool Sim800::init(const String& pin)
 {
     Serial.print(F("Trying to find Sim800..."));
     sendCmd("AT+CMEE=1");
@@ -113,7 +113,7 @@ Sim800::CallState Sim800::callState()
     return ret;
 }
 
-bool Sim800::sendSms(String number, String text)
+bool Sim800::sendSms(const String& number, const String& text)
 {
     sendCmd("AT+CMGF=1\r", false);
     if (!readResponse("OK"))
@@ -162,7 +162,7 @@ bool Sim800::sendSms(String number, String text)
     return true;
 }
 
-bool Sim800::callNumber(String number)
+bool Sim800::callNumber(const String& number)
 {
     String command;
     command = "ATD";
@@ -179,7 +179,7 @@ bool Sim800::hangupCall()
     return readResponse("OK");
 }
 
-bool Sim800::setPin(String pin)
+bool Sim800::setPin(const String& pin)
 {
     String command;
     command = "AT+CPIN=";
@@ -225,7 +225,7 @@ String Sim800::readSerial(uint32_t timeout)
     return str;
 }
 
-bool Sim800::readResponse(String pattern)
+bool Sim800::readResponse(const String& pattern)
 {
     String str;
     str = readSerial();
@@ -242,7 +242,7 @@ bool Sim800::readResponse(String pattern)
     }
 }
 
-bool Sim800::parseInput(String input, String pattern)
+bool Sim800::sendCmd(String text)
 {
 #ifdef SIM800_DEBUG
     Serial.println(input);

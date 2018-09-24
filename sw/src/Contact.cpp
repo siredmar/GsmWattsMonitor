@@ -16,12 +16,12 @@ bool Contact::init()
     return true;
 }
 
-bool Contact::sendSms(String number, String text)
+bool Contact::sendSms(const String& number, const String& text)
 {
     return modem->sendSms(number, text);
 }
 
-bool Contact::callNumber(String number, int seconds)
+bool Contact::callNumber(const String& number, int seconds)
 {
     while (modem->callState() != Sim800::CallState::ready)
     {
@@ -101,7 +101,7 @@ void Contact::process()
     Serial.println("processing done");
 }
 
-bool Contact::registerNumber(String number, bool call = true, int seconds = 0, bool sms = false)
+bool Contact::registerNumber(const String& number, bool call = true, int seconds = 0, bool sms = false)
 {
     Serial.println(number);
     Serial.println(call);
@@ -139,7 +139,7 @@ bool Contact::registerNumber(String number, bool call = true, int seconds = 0, b
     Serial.println(registeredContacts);
 }
 
-bool Contact::deleteRegistration(String number)
+bool Contact::deleteRegistration(const String& number)
 {
     int registeredContacts = configuration->numberOfRegisteredContacts();
     int index = findRegistrationIndex(number);
@@ -194,7 +194,7 @@ void Contact::status()
     }
 }
 
-int Contact::findRegistrationIndex(String number)
+int Contact::findRegistrationIndex(const String& number)
 {
     for (int i = 0; i < (int)NumberOfContacts::MAX_NUMBER_OF_CONTACTS; i++)
     {

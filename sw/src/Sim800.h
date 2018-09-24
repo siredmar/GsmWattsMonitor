@@ -14,14 +14,14 @@ class Sim800
 public:
     Sim800();
     Sim800(int rx, int tx);
-    bool init(String pin);
+    bool init(const String& pin);
     bool testAT();
     bool networkStatus();
     bool functionMode(bool enabled);
-    bool sendSms(String number, String text);
-    bool callNumber(String number);
+    bool sendSms(const String& number, const String& text);
+    bool callNumber(const String& number);
     bool hangupCall();
-    bool setPin(String pin);
+    bool setPin(const String& pin);
     bool checkPin();
     enum class CallState
     {
@@ -36,12 +36,12 @@ public:
 
 private:
     SoftwareSerial* mySerial;
-    bool parseInput(String input, String pattern);
+    bool parseInput(const String& input, String pattern);
     String readSerial();
     String readSerial(uint32_t timeout);
-    bool sendCmd(String text, bool newline);
+    bool readResponse(const String& str);
     bool sendCmd(char c);
-    bool readResponse(String str);
+    bool sendCmd(const String& text, bool newline);
     int rxPin;
     int txPin;
 };
