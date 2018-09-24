@@ -14,22 +14,22 @@ class Sim800
 public:
     Sim800();
     Sim800(int rx, int tx);
-    bool init(String pin);
+    bool init(const String& pin);
     bool testAT();
     bool networkStatus();
     bool functionMode(bool enabled);
-    bool sendSms(String number, String text);
-    bool callNumber(String number);
+    bool sendSms(const String& number, const String& text);
+    bool callNumber(const String& number);
     bool hangupCall();
-    bool setPin(String pin);
+    bool setPin(const String& pin);
     bool checkPin();
 
 private:
     SoftwareSerial* mySerial;
     String readSerial();
     String readSerial(uint32_t timeout);
-    bool sendCmd(String text);
-    bool readResponse(String str);
+    bool sendCmd(const String& text);
+    bool readResponse(const String& str);
     int rxPin;
     int txPin;
 };
