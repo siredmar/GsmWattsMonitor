@@ -172,13 +172,13 @@ double Configuration::energyEmonCalibration()
     return configuration.energy.emonCalibration;
 }
 
-void Configuration::energyWattsTimeout(int seconds)
+void Configuration::energyWattsTimeout(long seconds)
 {
     configuration.energy.wattsTimeout = seconds;
     EEPROM_writeAnything(0, configuration);
 }
 
-int Configuration::energyWattsTimeout()
+long Configuration::energyWattsTimeout()
 {
     EEPROM_readAnything(0, configuration);
     return configuration.energy.wattsTimeout;

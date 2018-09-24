@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 
-// #define SIM800_DEBUG
+#define SIM800_DEBUG
 
 #define SIM800_DEFAULT_RX 8
 #define SIM800_DEFAULT_TX 7
@@ -23,12 +23,24 @@ public:
     bool hangupCall();
     bool setPin(String pin);
     bool checkPin();
+    enum class CallState
+    {
+        ready,
+        unavailable,
+        unknown,
+        ringing,
+        callInProgress,
+        asleep
+    };
+    CallState callState();
 
 private:
     SoftwareSerial* mySerial;
+    bool parseInput(String input, String pattern);
     String readSerial();
     String readSerial(uint32_t timeout);
-    bool sendCmd(String text);
+    bool sendCmd(String text, bool newline);
+    bool sendCmd(char c);
     bool readResponse(String str);
     int rxPin;
     int txPin;

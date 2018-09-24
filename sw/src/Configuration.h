@@ -76,8 +76,8 @@ public:
 
     void energyEmonCalibration(double calib);
     double energyEmonCalibration();
-    void energyWattsTimeout(int seconds);
-    int energyWattsTimeout();
+    void energyWattsTimeout(long seconds);
+    long energyWattsTimeout();
     void energyWattsTrigger(double trigger);
     double energyWattsTrigger();
     void energyWattsRelease(double release);

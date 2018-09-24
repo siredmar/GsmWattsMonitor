@@ -77,26 +77,89 @@ bool Sim800::functionMode(bool enabled)
     return readResponse("OK");
 }
 
-bool Sim800::sendSms(String number, String text)
+Sim800::CallState Sim800::callState()
 {
-    String _buffer;
-    mySerial->print(F("AT+CMGF=1\r"));
-    _buffer = readSerial();
-    mySerial->print(F("AT+CMGS=\""));
-    mySerial->print(number);
-    mySerial->print(F("\"\r"));
-    _buffer = readSerial();
-    mySerial->print(text);
-    mySerial->print(F("\r"));
-    _buffer = readSerial();
-    mySerial->print((char)26);
-    _buffer = readSerial(60000);
-    if ((_buffer.indexOf("OK")) == -1)
+    Sim800::CallState ret = Sim800::CallState::unknown;
+    sendCmd("AT+CPAS");
+    String str = readSerial();
+    if (parseInput(str, ": 0"))
     {
-        return false;
+        ret = Sim800::CallState::ready;
+    }
+    else if (parseInput(str, ": 1"))
+    {
+        ret = Sim800::CallState::unavailable;
+    }
+    else if (parseInput(str, ": 2"))
+    {
+        ret = Sim800::CallState::unknown;
+    }
+    else if (parseInput(str, ": 3"))
+    {
+        ret = Sim800::CallState::ringing;
+    }
+    else if (parseInput(str, ": 4"))
+    {
+        ret = Sim800::CallState::callInProgress;
+    }
+    else if (parseInput(str, ": 5"))
+    {
+        ret = Sim800::CallState::asleep;
     }
     else
-        return true;
+    {
+        ret = Sim800::CallState::unknown;
+    }
+    return ret;
+}
+
+bool Sim800::sendSms(String number, String text)
+{
+    sendCmd("AT+CMGF=1\r", false);
+    if (!readResponse("OK"))
+    {
+        Serial.println(F("AT+CMGF failed"));
+        return false;
+    }
+    String command;
+    command = "AT+CMGS=\"";
+    command += number;
+    command += "\"\r";
+    sendCmd(command, false);
+    if (!readResponse(">"))
+    {
+        Serial.println(F("AT+CMGS failed"));
+        return false;
+    }
+    sendCmd(text, false);
+    sendCmd(26);
+    String resp = readSerial();
+    if (!parseInput(resp, "OK"))
+    {
+        Serial.println(F("text failed"));
+        return false;
+    }
+
+    // String cmd = "AT+CMGS=\"";
+    // cmd += number;
+    // cmd += "\"\r";
+    // Serial.println(cmd);
+    // cmd += text;
+    // cmd += "\r";
+    // Serial.println(cmd);
+    // sendCmd(cmd);
+    // if(!readResponse("OK"))
+    // {
+    //     Serial.println(F("AT+CMGS failed"));
+    //     return false;
+    // }
+
+    // mySerial->print((char)26);
+    // if(!readResponse("OK"))
+    // {
+    //     return false;
+    // }
+    return true;
 }
 
 bool Sim800::callNumber(String number)
@@ -179,12 +242,43 @@ bool Sim800::readResponse(String pattern)
     }
 }
 
-bool Sim800::sendCmd(String text)
+bool Sim800::parseInput(String input, String pattern)
 {
 #ifdef SIM800_DEBUG
-    Serial.println(text);
+    Serial.println(input);
 #endif
-    mySerial->println(text);
+    if (input.indexOf(pattern) == -1)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+bool Sim800::sendCmd(String text, bool newline = true)
+{
+#ifdef SIM800_DEBUG
+    if (newline)
+        Serial.println(text);
+    else
+        Serial.print(text);
+#endif
+    if (newline)
+        mySerial->println(text);
+    else
+        mySerial->print(text);
+    delay(100);
+    return true;
+}
+
+bool Sim800::sendCmd(char c)
+{
+#ifdef SIM800_DEBUG
+    Serial.print(c);
+#endif
+    mySerial->print(c);
     delay(100);
     return true;
 }

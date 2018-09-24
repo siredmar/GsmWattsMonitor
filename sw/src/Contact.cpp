@@ -23,16 +23,31 @@ bool Contact::sendSms(String number, String text)
 
 bool Contact::callNumber(String number, int seconds)
 {
+    while (modem->callState() != Sim800::CallState::ready)
+    {
+        Serial.println("Waiting for ready");
+    }
+
     Serial.print("Calling number ");
     Serial.println(number);
+
     if (!modem->callNumber(number))
     {
+        Serial.print(F("... failed"));
         return false;
     }
+    delay(1000);
+    if (modem->callState() != Sim800::CallState::ringing && modem->callState() != Sim800::CallState::callInProgress)
+    {
+        Serial.print(F("Call failed"));
+        return false;
+    }
+
     if (seconds > 30)
     {
         seconds = 30;
     }
+
     Serial.print("Waiting ");
     Serial.print(seconds);
     Serial.println(" seconds");
@@ -42,6 +57,7 @@ bool Contact::callNumber(String number, int seconds)
     Serial.println("Hangup call");
     if (!modem->hangupCall())
     {
+        Serial.print(F("... failed"));
         return false;
     }
     return true;

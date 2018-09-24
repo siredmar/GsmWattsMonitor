@@ -61,7 +61,7 @@ public:
         }
     }
 
-    void blink()
+    void blink(long lengthMs)
     {
         switch (blinkState)
         {
@@ -72,7 +72,7 @@ public:
                 break;
 
             case BlinkState::WAITING_FOR_ON:
-                if (millis() - oldTime >= blinkMs)
+                if (millis() - oldTime >= lengthMs)
                     blinkState = BlinkState::ON;
                 break;
 
@@ -83,10 +83,20 @@ public:
                 break;
 
             case BlinkState::WAITING_FOR_OFF:
-                if (millis() - oldTime >= blinkMs)
+                if (millis() - oldTime >= lengthMs)
                     blinkState = BlinkState::OFF;
                 break;
         }
+    }
+
+    void blink()
+    {
+        blink(blinkMs);
+    }
+
+    void blinkFast()
+    {
+        blink(blinkMs / 4);
     }
 
 private:
