@@ -19,14 +19,14 @@ Sim800::Sim800(int rx, int tx)
 bool Sim800::init(const String& pin)
 {
     Serial.print(F("Trying to find Sim800..."));
-    sendCmd("AT+CMEE=1");
     while (!testAT())
     {
         delay(100);
         Serial.print(F("."));
     }
     Serial.println(F(" found"));
-
+    sendCmd("AT+CMEE=1", true);
+    (void)readSerial();
     Serial.print(F("Enabling network..."));
     functionMode(true);
     Serial.println(F(" done"));
@@ -51,12 +51,13 @@ bool Sim800::init(const String& pin)
 
 bool Sim800::testAT()
 {
-    return sendCmd("AT");
+    sendCmd("AT", true);
+    return readResponse("OK");
 }
 
 bool Sim800::networkStatus()
 {
-    sendCmd("AT+CREG?");
+    sendCmd("AT+CREG?", true);
     return readResponse(",1");
 }
 
@@ -80,7 +81,7 @@ bool Sim800::functionMode(bool enabled)
 Sim800::CallState Sim800::callState()
 {
     Sim800::CallState ret = Sim800::CallState::unknown;
-    sendCmd("AT+CPAS");
+    sendCmd("AT+CPAS", true);
     String str = readSerial();
     if (parseInput(str, ": 0"))
     {
@@ -133,32 +134,12 @@ bool Sim800::sendSms(const String& number, const String& text)
     }
     sendCmd(text, false);
     sendCmd(26);
-    String resp = readSerial();
-    if (!parseInput(resp, "OK"))
+    delay(200);
+    if (!readResponse(text))
     {
         Serial.println(F("text failed"));
         return false;
     }
-
-    // String cmd = "AT+CMGS=\"";
-    // cmd += number;
-    // cmd += "\"\r";
-    // Serial.println(cmd);
-    // cmd += text;
-    // cmd += "\r";
-    // Serial.println(cmd);
-    // sendCmd(cmd);
-    // if(!readResponse("OK"))
-    // {
-    //     Serial.println(F("AT+CMGS failed"));
-    //     return false;
-    // }
-
-    // mySerial->print((char)26);
-    // if(!readResponse("OK"))
-    // {
-    //     return false;
-    // }
     return true;
 }
 
@@ -169,13 +150,13 @@ bool Sim800::callNumber(const String& number)
     command += number;
     command += ";";
 
-    mySerial->println(command);
+    sendCmd(command, true);
     return readResponse("OK");
 }
 
 bool Sim800::hangupCall()
 {
-    sendCmd("ATH");
+    sendCmd("ATH", true);
     return readResponse("OK");
 }
 
@@ -212,7 +193,7 @@ String Sim800::readSerial(uint32_t timeout)
         delay(13);
     }
 
-    String str;
+    String str = "";
 
     while (mySerial->available())
     {
