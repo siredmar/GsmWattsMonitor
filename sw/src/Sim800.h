@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 
-#define SIM800_DEBUG
+// #define SIM800_DEBUG
 
 #define SIM800_DEFAULT_RX 8
 #define SIM800_DEFAULT_TX 7

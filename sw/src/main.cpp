@@ -235,13 +235,12 @@ void loop()
         loop++;
     }
 
-    // if (!modem->networkStatus())
-    // {
-    //     Serial.println("Not connected!");
-    //     led.blinkFast();
-    // }
-    // else 
-    if (!trigger->getState())
+    if (!modem->networkStatus())
+    {
+        Serial.println("Not connected!");
+        led.blinkFast();
+    }
+    else if (!trigger->getState())
     {
         // Idle operation
         led.blink();
