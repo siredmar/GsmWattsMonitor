@@ -190,7 +190,7 @@ void setup()
     contact = new Contact(modem, configuration);
     if (!contact->init())
     {
-        led.off();
+        led.blinkFast();
     }
     else
     {
@@ -235,12 +235,19 @@ void loop()
         loop++;
     }
 
-    if (trigger->getState() == false)
+    if (!modem->networkStatus())
     {
+        Serial.println("Not connected!");
+        led.blinkFast();
+    }
+    else if (!trigger->getState())
+    {
+        // Idle operation
         led.blink();
     }
     else
     {
+        // Trigger switch was activated
         led.on();
     }
 }

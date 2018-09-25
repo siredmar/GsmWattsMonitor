@@ -23,13 +23,25 @@ public:
     bool hangupCall();
     bool setPin(const String& pin);
     bool checkPin();
+    enum class CallState
+    {
+        ready,
+        unavailable,
+        unknown,
+        ringing,
+        callInProgress,
+        asleep
+    };
+    CallState callState();
 
 private:
     SoftwareSerial* mySerial;
+    bool parseInput(const String& input, String pattern);
     String readSerial();
     String readSerial(uint32_t timeout);
-    bool sendCmd(const String& text);
     bool readResponse(const String& str);
+    bool sendCmd(const String& text, bool newline);
+    bool sendCmd(char c);
     int rxPin;
     int txPin;
 };

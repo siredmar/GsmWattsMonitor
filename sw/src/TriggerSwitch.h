@@ -1,6 +1,8 @@
 #pragma once
 #include <Arduino.h>
 
+// #define DEBUG
+
 enum class TriggerSwitchState
 {
     idle,
@@ -12,7 +14,7 @@ enum class TriggerSwitchState
 template <class T> class TriggerSwitch
 {
 public:
-    TriggerSwitch(T trigger, T release, int hysteresis, void (*callback)(void))
+    TriggerSwitch(T trigger, T release, long hysteresis, void (*callback)(void))
         : newTrigger(false)
         , trigger(trigger)
         , release(release)
@@ -43,8 +45,14 @@ public:
         switch (state)
         {
             case TriggerSwitchState::idle:
+            #ifdef DEBUG
+            Serial.println("State: idle");
+            #endif
                 if (input >= trigger)
                 {
+                    #ifdef DEBUG
+                    Serial.println("idle: idle -> trigger");
+                    #endif
                     state = TriggerSwitchState::trigger;
                     newTrigger = false;
                 }
@@ -54,30 +62,52 @@ public:
                 timeDelta = 0;
                 startTime = -1;
                 state = TriggerSwitchState::capturing;
+                #ifdef DEBUG
+                Serial.println("trigger: trigger -> capturing");
+                #endif
                 break;
 
             case TriggerSwitchState::capturing:
                 if (input < release)
                 {
+                    #ifdef DEBUG
+                    Serial.println("Capturing: input < release");
+                    #endif
                     if (startTime == -1)
                     {
                         startTime = millis();
                     }
-
-                    timeDelta += millis() - startTime;
+                    #ifdef DEBUG
+                    Serial.print("startTime: ");
+                    Serial.println(startTime);
+                    #endif
+                    timeDelta = millis() - startTime;
+                    #ifdef DEBUG
+                    Serial.print("timeDelta: ");
+                    Serial.println(timeDelta);
+                    #endif
                     if (timeDelta >= hysteresisMs)
                     {
+                        #ifdef DEBUG
+                        Serial.println("capturing: capturing -> release");
+                        #endif
                         state = TriggerSwitchState::release;
                         newTrigger = true;
                     }
                 }
                 else
                 {
+                    #ifdef DEBUG
+                    Serial.println("capturing: capturing -> trigger");
+                    #endif
                     state = TriggerSwitchState::trigger;
                 }
                 break;
 
             case TriggerSwitchState::release:
+                #ifdef DEBUG
+                Serial.println("release: release -> idle");
+                #endif
                 (*callback)();
                 reset();
                 state = TriggerSwitchState::idle;

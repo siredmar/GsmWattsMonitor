@@ -19,14 +19,14 @@ Sim800::Sim800(int rx, int tx)
 bool Sim800::init(const String& pin)
 {
     Serial.print(F("Trying to find Sim800..."));
-    sendCmd("AT+CMEE=1");
     while (!testAT())
     {
         delay(100);
         Serial.print(F("."));
     }
     Serial.println(F(" found"));
-
+    sendCmd("AT+CMEE=1", true);
+    (void)readSerial();
     Serial.print(F("Enabling network..."));
     functionMode(true);
     Serial.println(F(" done"));
@@ -51,12 +51,13 @@ bool Sim800::init(const String& pin)
 
 bool Sim800::testAT()
 {
-    return sendCmd("AT");
+    sendCmd("AT", true);
+    return readResponse("OK");
 }
 
 bool Sim800::networkStatus()
 {
-    sendCmd("AT+CREG?");
+    sendCmd("AT+CREG?", true);
     return readResponse(",1");
 }
 
@@ -77,26 +78,69 @@ bool Sim800::functionMode(bool enabled)
     return readResponse("OK");
 }
 
-bool Sim800::sendSms(const String& number, const String& text)
+Sim800::CallState Sim800::callState()
 {
-    String _buffer;
-    mySerial->print(F("AT+CMGF=1\r"));
-    _buffer = readSerial();
-    mySerial->print(F("AT+CMGS=\""));
-    mySerial->print(number);
-    mySerial->print(F("\"\r"));
-    _buffer = readSerial();
-    mySerial->print(text);
-    mySerial->print(F("\r"));
-    _buffer = readSerial();
-    mySerial->print((char)26);
-    _buffer = readSerial(60000);
-    if ((_buffer.indexOf("OK")) == -1)
+    Sim800::CallState ret = Sim800::CallState::unknown;
+    sendCmd("AT+CPAS", true);
+    String str = readSerial();
+    if (parseInput(str, ": 0"))
     {
-        return false;
+        ret = Sim800::CallState::ready;
+    }
+    else if (parseInput(str, ": 1"))
+    {
+        ret = Sim800::CallState::unavailable;
+    }
+    else if (parseInput(str, ": 2"))
+    {
+        ret = Sim800::CallState::unknown;
+    }
+    else if (parseInput(str, ": 3"))
+    {
+        ret = Sim800::CallState::ringing;
+    }
+    else if (parseInput(str, ": 4"))
+    {
+        ret = Sim800::CallState::callInProgress;
+    }
+    else if (parseInput(str, ": 5"))
+    {
+        ret = Sim800::CallState::asleep;
     }
     else
-        return true;
+    {
+        ret = Sim800::CallState::unknown;
+    }
+    return ret;
+}
+
+bool Sim800::sendSms(const String& number, const String& text)
+{
+    sendCmd("AT+CMGF=1\r", false);
+    if (!readResponse("OK"))
+    {
+        Serial.println(F("AT+CMGF failed"));
+        return false;
+    }
+    String command;
+    command = "AT+CMGS=\"";
+    command += number;
+    command += "\"\r";
+    sendCmd(command, false);
+    if (!readResponse(">"))
+    {
+        Serial.println(F("AT+CMGS failed"));
+        return false;
+    }
+    sendCmd(text, false);
+    sendCmd(26);
+    delay(200);
+    if (!readResponse(text))
+    {
+        Serial.println(F("text failed"));
+        return false;
+    }
+    return true;
 }
 
 bool Sim800::callNumber(const String& number)
@@ -106,13 +150,13 @@ bool Sim800::callNumber(const String& number)
     command += number;
     command += ";";
 
-    mySerial->println(command);
+    sendCmd(command, true);
     return readResponse("OK");
 }
 
 bool Sim800::hangupCall()
 {
-    sendCmd("ATH");
+    sendCmd("ATH", true);
     return readResponse("OK");
 }
 
@@ -149,7 +193,7 @@ String Sim800::readSerial(uint32_t timeout)
         delay(13);
     }
 
-    String str;
+    String str = "";
 
     while (mySerial->available())
     {
@@ -179,12 +223,43 @@ bool Sim800::readResponse(const String& pattern)
     }
 }
 
-bool Sim800::sendCmd(const String& text)
+bool Sim800::sendCmd(const String& text, bool newline = true)
 {
 #ifdef SIM800_DEBUG
-    Serial.println(text);
+    if (newline)
+        Serial.println(text);
+    else
+        Serial.print(text);
 #endif
-    mySerial->println(text);
+    if (newline)
+        mySerial->println(text);
+    else
+        mySerial->print(text);
     delay(100);
     return true;
+}
+
+bool Sim800::sendCmd(char c)
+{
+#ifdef SIM800_DEBUG
+    Serial.print(c);
+#endif
+    mySerial->print(c);
+    delay(100);
+    return true;
+}
+
+bool Sim800::parseInput(const String& input, String pattern)
+{
+#ifdef SIM800_DEBUG
+    Serial.println(input);
+#endif
+    if (input.indexOf(pattern) == -1)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
