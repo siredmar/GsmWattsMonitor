@@ -23,7 +23,13 @@ public:
         , timeDelta(0)
         , callback(callback)
         , state(TriggerSwitchState::idle)
+        , verbose(false)
     {
+    }
+
+    void setVerbose(bool mode)
+    {
+        verbose = mode;
     }
 
     void setTrigger(T trig, T release, int hysteresis)
@@ -45,14 +51,16 @@ public:
         switch (state)
         {
             case TriggerSwitchState::idle:
-            #ifdef DEBUG
-            Serial.println("State: idle");
-            #endif
+                if (verbose == true)
+                {
+                    Serial.println("State: idle");
+                }
                 if (input >= trigger)
                 {
-                    #ifdef DEBUG
-                    Serial.println("idle: idle -> trigger");
-                    #endif
+                    if (verbose == true)
+                    {
+                        Serial.println("idle: idle -> trigger");
+                    }
                     state = TriggerSwitchState::trigger;
                     newTrigger = false;
                 }
@@ -62,52 +70,59 @@ public:
                 timeDelta = 0;
                 startTime = -1;
                 state = TriggerSwitchState::capturing;
-                #ifdef DEBUG
-                Serial.println("trigger: trigger -> capturing");
-                #endif
+                if (verbose == true)
+                {
+                    Serial.println("trigger: trigger -> capturing");
+                }
                 break;
 
             case TriggerSwitchState::capturing:
                 if (input < release)
                 {
-                    #ifdef DEBUG
-                    Serial.println("Capturing: input < release");
-                    #endif
+                    if (verbose == true)
+                    {
+                        Serial.println("Capturing: input < release");
+                    }
                     if (startTime == -1)
                     {
                         startTime = millis();
                     }
-                    #ifdef DEBUG
-                    Serial.print("startTime: ");
-                    Serial.println(startTime);
-                    #endif
+                    if (verbose == true)
+                    {
+                        Serial.print("startTime: ");
+                        Serial.println(startTime);
+                    }
                     timeDelta = millis() - startTime;
-                    #ifdef DEBUG
-                    Serial.print("timeDelta: ");
-                    Serial.println(timeDelta);
-                    #endif
+                    if (verbose == true)
+                    {
+                        Serial.print("timeDelta: ");
+                        Serial.println(timeDelta);
+                    }
                     if (timeDelta >= hysteresisMs)
                     {
-                        #ifdef DEBUG
-                        Serial.println("capturing: capturing -> release");
-                        #endif
+                        if (verbose == true)
+                        {
+                            Serial.println("capturing: capturing -> release");
+                        }
                         state = TriggerSwitchState::release;
                         newTrigger = true;
                     }
                 }
                 else
                 {
-                    #ifdef DEBUG
-                    Serial.println("capturing: capturing -> trigger");
-                    #endif
+                    if (verbose == true)
+                    {
+                        Serial.println("capturing: capturing -> trigger");
+                    }
                     state = TriggerSwitchState::trigger;
                 }
                 break;
 
             case TriggerSwitchState::release:
-                #ifdef DEBUG
-                Serial.println("release: release -> idle");
-                #endif
+                if (verbose == true)
+                {
+                    Serial.println("release: release -> idle");
+                }
                 (*callback)();
                 reset();
                 state = TriggerSwitchState::idle;
@@ -134,4 +149,5 @@ private:
     long timeDelta;
     void (*callback)(void);
     TriggerSwitchState state;
+    bool verbose;
 };

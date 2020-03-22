@@ -57,6 +57,7 @@ void Verbose(int arg_cnt, char** args)
     if (arg_cnt == 2)
     {
         verbose = (bool)cmdStr2Num(args[1], 10);
+        trigger->setVerbose(verbose);
     }
     else
     {
@@ -227,7 +228,9 @@ void loop()
     {
         float avg = average.CalculateMovingAverage((float)watts);
         if (verbose)
+        {
             Serial.println(avg);
+        }
         trigger->process((float)avg);
     }
     else
